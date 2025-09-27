@@ -3,99 +3,24 @@
 # Function for option 1 | Reboot IPs from registers.txt
 function option1() {
     echo "Option 1 selected."
-    
-# Define the path to the registers file
-REGISTERS_FILE="registers.txt"
-# Log script start time
-echo "Script Start" >> log_file."$(date -I)".txt
-
-# Define the username and password for the remote machines
-USERNAME="root"
-PASSWORD="c0b4lt"
-
-# Define an array of IP addresses to connect to
-IP_ADDRESSES=()
-
-# Read the IP addresses from the registers file
-while IFS= read -r line; do
-  # Add only valid IPs (optional: can add a regex for validation)
-  if [[ "$line" =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-    IP_ADDRESSES+=("$line")
-  fi
-done < "$REGISTERS_FILE"
-
-# Display the IP addresses from registers.txt
-echo "The following ip addresses will be rebooted:"
-printf "%s\n" "${IP_ADDRESSES[@]}"
-
-# Prompt the user for confirmation.
-read -p "Is it okay to proceed with the reboots (yes or no)? " input
-
-# Need to add this into the script | ssh-keyscan -H 172.22.236.22 >> ~/.ssh/known_hosts
-
-if [[ "$input" == "yes" ]]; then
-  # Loop through each IP address in the array
-  for i in "${IP_ADDRESSES[@]}"; do
-    # Attempt to connect using SSH and capture any errors
-    sshpass -p "$PASSWORD" ssh -o StrictHostKeyChecking=no -T "$USERNAME@$i" << EOF
-      echo "Rebooting IP address: $i"
-      reboot
-EOF
-
-# Check the exit status of the SSH command to determine if there was an error
-    ssh_status=$?
-    if [ $ssh_status -ne 0 ]; then
-      echo "$(date +%m-%d-%Y) | User: $USER | Error connecting to IP: $i @ $(date +%r)" >> log_file."$(date -I)".txt
-    else
-      # Log the successful reboot action
-      echo "$(date +%m-%d-%Y) | User: $USER | IP Rebooted $i @ $(date +%r)" >> log_file."$(date -I)".txt
-    fi
-  done
-elif [[ "$input" == "no" ]]; then
-  echo "Exiting"
-else
-  echo "Invalid input, exiting."
-fi
-
-# Log script end time
-echo "Script End" >> log_file."$(date -I)".txt
-
-    sleep 2 # Simulate some processing time
+    # Add logic to reboot IPs here.
 }
 
-# Function for option 2
+# Function for option 2 | Placeholder function
 function option2() {
     echo "Option 2 selected."
-    # Add your task here.
-    sleep 2 # Simulate some processing time
+    # Additional code for option2...
 }
 
-# Function for exiting the menu
-function exit_menu() {
-    clear
-    dialog --clear --title "Exit" --yesno "\nAre you sure you want to exit?" 5 20
-    if [ $? -eq 0 ]; then
-        echo "Exiting..."
-        exit 0
-    else
-        main_menu
-    fi
-}
-
-# Main menu function
-function main_menu() {
+# Display menu and get user input
+function display_menu() {
     while true; do
-        exec 3>&1 # Save current stdout
-
-        selection=$(dialog --clear \
-            --backtitle "Main Menu" \
-            --title "Choose an option:" \
-            --menu "Select one of the following options:" 15 50 4 \
-            "1" "Reboot Registers" \
-            "2" "Option 2" \
-            "3" "Exit" 3>&-)
-
-        exec 1>&3 # Restore stdout
+        clear
+        echo "Main Menu"
+        echo "1) Option 1: Reboot IPs"
+        echo "2) Option 2: Placeholder"
+        echo "3) Exit"
+        read -p "Select an option [1-3]: " selection
 
         case $selection in
             1)
@@ -105,16 +30,16 @@ function main_menu() {
                 option2
                 ;;
             3)
-                exit_menu
-                break
+                echo "Exiting."
+                exit 0
                 ;;
             *)
-                dialog --clear --msgbox "Invalid selection. Please try again." 5 20
+                echo "Invalid selection. Please try again."
+                sleep 2
                 ;;
         esac
-
     done
 }
 
-# Start the script with the main menu
-main_menu
+# Main script execution
+display_menu
