@@ -55,3 +55,4 @@ fi
 
 # Log script end time
 echo "Script End" >> log_file."$(date -I)".txt
+
