@@ -25,12 +25,13 @@ function display_menu() {
         case $selection in
             1)
                 option1
-                            USERNAME="root"
-            PASSWORD="c0b4lt"  # Consider using SSH keys instead for security.
+            # Define the username and password for the remote machines
+            USERNAME="root"
+            PASSWORD="c0b4lt"
             read -r -p "Enter IP Address: " IP
 
             # Use sshpass to pass the password and execute commands remotely
-            sshpass -p "$PASSWORD" ssh -o StrictHostKeyChecking=no -T "$USERNAME@$IP" << EOF
+            sshpass -p "$PASSWORD" ssh -o StrictHostKeyChecking=no -o ConnectTimeout=5 -T "$USERNAME@$IP" << EOF
                 printf "\033[32mHost Name: \033[0m\n" && hostname
                 printf "\033[32mCheck OS Version :\033[0m\n";  grep -o 'PRETTY_NAME="[^"]*"' /etc/os-release | sed 's/PRETTY_NAME="//' | sed 's/"$//' && echo && \
                 printf "\033[32mCheck the POS Build\033[0m\n"; rpm -qa | grep bean && echo && \
@@ -78,9 +79,9 @@ EOF
             # Loop through each IP address in the array
             for i in "${IP_ADDRESSES[@]}"; do
                 # Attempt to connect using SSH and capture any errors
-                sshpass -p "$PASSWORD" ssh -o StrictHostKeyChecking=no -T "$USERNAME@$i" << EOF
+                sshpass -p "$PASSWORD" ssh -o StrictHostKeyChecking=no -o ConnectTimeout=5 -T "$USERNAME@$i" << EOF 
                 echo "Rebooting IP address: $i"
-                reboot
+                reboot && exit 0
 EOF
 
             # Check the exit status of the SSH command to determine if there was an error
@@ -91,6 +92,7 @@ EOF
                 # Log the successful reboot action
                 echo "$(date +%m-%d-%Y) | User: $USER | IP Rebooted $i @ $(date +%r)" >> log_file."$(date -I)".txt
                 fi
+
             done
             elif [[ "$input" == "no" ]]; then
             echo "Exiting"
@@ -101,8 +103,7 @@ EOF
             # Log script end time
             echo "Script End" >> log_file."$(date -I)".txt
 
-
-
+            read -p "Press Enter to continue..."
                 ;;
             3)
                 echo "Exiting."
